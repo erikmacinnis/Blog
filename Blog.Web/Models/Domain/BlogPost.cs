@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Blog.Web.Models.Domain
+﻿namespace Blog.Web.Models.Domain
 {
     public class BlogPost
     {
