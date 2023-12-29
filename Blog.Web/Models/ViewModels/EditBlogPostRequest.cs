@@ -2,7 +2,7 @@
 
 namespace Blog.Web.Models.ViewModels
 {
-    public class AddBlogPostRequest
+    public class EditBlogPostRequest
     {
         public Guid Id { get; set; }
         public string Heading { get; set; }
@@ -14,10 +14,9 @@ namespace Blog.Web.Models.ViewModels
         public DateTime PublishedDate { get; set; }
         public string Author { get; set; }
         public bool Visible { get; set; }
-        // This is used to display the Tags
-        // Everything else are inputs from the user
-        // This makes it clear on how to display the items in the list
+        // Displaying the Tag
         public IEnumerable<SelectListItem> Tags { get; set; }
+        // Getting the tags
         public string[] SelectedTags { get; set; } = Array.Empty<string>();
     }
 }
