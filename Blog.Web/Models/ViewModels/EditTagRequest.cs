@@ -7,6 +7,6 @@ namespace Blog.Web.Models.ViewModels
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
-        public ICollection<BlogPost> BlocPosts { get; set; }
+        public ICollection<BlogPost> BlogPosts { get; set; }
     }
 }

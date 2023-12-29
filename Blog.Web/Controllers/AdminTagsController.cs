@@ -1,17 +1,19 @@
-﻿using Blog.Web.Data;
-using Blog.Web.Models.Domain;
+﻿using Blog.Web.Models.Domain;
 using Blog.Web.Models.ViewModels;
+using Blog.Web.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.Web.Controllers
 {
     public class AdminTagsController : Controller
     {
-        private readonly BlogDbContext blogDbContext;
+        private readonly ITagRepository tagRepository;
 
-        public AdminTagsController(BlogDbContext blogDbContext)
+        // BlogDbContext is found because an instance is found because we injected and instance in the program.cs
+        // The controller is only called when needed and by that time it can find the instance or BlogDbContext
+        public AdminTagsController(ITagRepository tagRepository)
         {
-            this.blogDbContext = blogDbContext;
+            this.tagRepository = tagRepository;
         }
 
         // Get method for /AdminTags/Add path
@@ -22,7 +24,7 @@ namespace Blog.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult Add(AddTagRequest addTagRequest)
+        public async Task<IActionResult> Add(AddTagRequest addTagRequest)
         {
             // Mapping addTagRequest to Tag domain model
             var tag = new Tag
@@ -31,31 +33,31 @@ namespace Blog.Web.Controllers
                 DisplayName = addTagRequest.DisplayName,
             };
 
-            // Adding the tag into the db
-            blogDbContext.Tags.Add(tag);
-            // Must save changes to the db
-            blogDbContext.SaveChanges();
+            await tagRepository.AddAsync(tag);
 
             return RedirectToAction("List");
         }
 
         [HttpGet]
-        public IActionResult List()
+        public async Task<IActionResult> List()
         {
             // use dbContext to read the tags
-            var tags = blogDbContext.Tags.ToList();
+            var tags = await tagRepository.GetAllAsync();
+
+            tags.Reverse();
 
             return View(tags);
         }
 
+        // Called by list.cshtml file
         [HttpGet]
-        public IActionResult Edit(Guid id)
+        public async Task<IActionResult> Edit(Guid id)
         {
             // 1st option
             //var tag = blogDbContext.Tags.Find(id);
 
             //2nd option
-            var tag = blogDbContext.Tags.FirstOrDefault(x => x.Id == id);
+            var tag = await tagRepository.GetAsync(id);
 
             if (tag != null)
             {
@@ -71,8 +73,9 @@ namespace Blog.Web.Controllers
             return View(null);
         }
 
+        // 
         [HttpPost]
-        public IActionResult Edit(EditTagRequest editTagRequest)
+        public async Task<IActionResult> Edit(EditTagRequest editTagRequest)
         {
             var tag = new Tag
             {
@@ -81,31 +84,24 @@ namespace Blog.Web.Controllers
                 DisplayName = editTagRequest.DisplayName,
             };
 
-            var existingTag = blogDbContext.Tags.FirstOrDefault(x => x.Id == tag.Id);
-            if (existingTag != null)
+            var updatedTag = await tagRepository.UpdateAsync(tag);
+            if (updatedTag != null)
             {
-                existingTag.Name = tag.Name;
-                existingTag.DisplayName = tag.DisplayName;
-
-                blogDbContext.SaveChanges();
-
                 // Show success notification
                 return RedirectToAction("Edit", new { id = editTagRequest.Id });
             }
+
             // Show failure notification
             return RedirectToAction("Edit", new { id = editTagRequest.Id });
         }
 
         [HttpPost]
-        public IActionResult Delete(EditTagRequest editTagRequest)
+        public async Task<IActionResult> Delete(EditTagRequest editTagRequest)
         {
-            var tag = blogDbContext.Tags.FirstOrDefault(x => x.Id == editTagRequest.Id);
+            var deletedTag = await tagRepository.DeleteAsync(editTagRequest.Id);
 
-            if (tag != null)
+            if (deletedTag != null)
             {
-                blogDbContext.Tags.Remove(tag);
-                blogDbContext.SaveChanges();
-
                 // Show a success notification
                 return RedirectToAction("List");
             }
