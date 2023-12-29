@@ -16,6 +16,7 @@ builder.Services.AddDbContext<BlogDbContext>(
 
 // Injecting the repository
 builder.Services.AddScoped<ITagRepository, TagRepository>();
+builder.Services.AddScoped<IBlogPostRepository, BlogPostRepository>();
 
 WebApplication app = builder.Build();
 

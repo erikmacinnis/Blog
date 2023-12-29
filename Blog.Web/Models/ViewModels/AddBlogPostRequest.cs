@@ -17,6 +17,6 @@ namespace Blog.Web.Models.ViewModels
         // Everything else are inputs from the user
         // This makes it clear on how to display the items in the list
         public IEnumerable<SelectListItem> Tags { get; set; }
-        public string SelectedTag { get; set; }
+        public string[] SelectedTags { get; set; } = Array.Empty<string>();
     }
 }
