@@ -96,6 +96,24 @@ namespace Blog.Web.Controllers
             return RedirectToAction("Edit", new { id = editTagRequest.Id });
         }
 
+        [HttpPost]
+        public IActionResult Delete(EditTagRequest editTagRequest)
+        {
+            var tag = blogDbContext.Tags.FirstOrDefault(x => x.Id == editTagRequest.Id);
+
+            if (tag != null)
+            {
+                blogDbContext.Tags.Remove(tag);
+                blogDbContext.SaveChanges();
+
+                // Show a success notification
+                return RedirectToAction("List");
+            }
+
+            // Show a error notification
+            return RedirectToAction("Edit", new { id = editTagRequest.Id });
+        }
+
         // Can be replaced with this method
         //[HttpPost]
         //// Will make the action visible to AdminTags/Add url so we can use it in the add.cshtml page
