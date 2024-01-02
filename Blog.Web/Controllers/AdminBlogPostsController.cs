@@ -37,13 +37,11 @@ namespace Blog.Web.Controllers
             return View(model);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Add(AddBlogPostRequest addBlogPostRequest)
+        private async Task<List<Tag>> getTags(string[] tags)
         {
-
             var selectedTags = new List<Tag>();
             //Map Tags from selected Tags
-            foreach (var selectedTagId in addBlogPostRequest.SelectedTags)
+            foreach (var selectedTagId in tags)
             {
                 var selectedTagGuid = Guid.Parse(selectedTagId);
                 var existingTag = await tagRepository.GetAsync(selectedTagGuid);
@@ -53,6 +51,15 @@ namespace Blog.Web.Controllers
                     selectedTags.Add(existingTag);
                 }
             }
+
+            return selectedTags;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Add(AddBlogPostRequest addBlogPostRequest)
+        {
+
+            var selectedTags = await getTags(addBlogPostRequest.SelectedTags);
 
             //Map view model to domain model
             var blogPost = new BlogPost
@@ -115,6 +122,38 @@ namespace Blog.Web.Controllers
             }
 
             return View(null);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(EditBlogPostRequest editBlogPostRequest)
+        {
+            var selectedTags = await getTags(editBlogPostRequest.SelectedTags);
+
+            var blogPost = new BlogPost
+            {
+                Id = editBlogPostRequest.Id,
+                Author = editBlogPostRequest.Author,
+                Content = editBlogPostRequest.Content,
+                FeaturedImageUrl = editBlogPostRequest.FeaturedImageUrl,
+                Heading = editBlogPostRequest.Heading,
+                PageTitle = editBlogPostRequest.PageTitle,
+                PublishedDate = editBlogPostRequest.PublishedDate,
+                Visible = editBlogPostRequest.Visible,
+                ShortDescription = editBlogPostRequest.ShortDescription,
+                Tags = selectedTags,
+                UrlHandle = editBlogPostRequest.UrlHandle,
+            };
+
+            var updatedBlog = await blogPostRepository.UpdateAsync(blogPost);
+
+            if (updatedBlog != null)
+            {
+                // show success notification
+                return RedirectToAction("Edit");
+            }
+
+            // show failure notification
+            return RedirectToAction("Edit");
         }
     }
 }
